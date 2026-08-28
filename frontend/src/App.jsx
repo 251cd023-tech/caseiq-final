@@ -1,122 +1,134 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+import { ToastContainer } from './components/Toast';
+import { AuthModal } from './components/AuthModal';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { SearchLegalView } from './views/SearchLegalView';
+import { ActsLibraryView } from './views/ActsLibraryView';
+import { CasesPrecedentsView } from './views/CasesPrecedentsView';
+import { AICaseAnalysisView } from './views/AICaseAnalysisView';
+import { PrecedentMapView } from './views/PrecedentMapView';
+import { LawMappingView } from './views/LawMappingView';
+import { CommunityView } from './views/CommunityView';
+import { BookmarksHistoryView } from './views/BookmarksHistoryView';
+
+function AppContent() {
+  const [activeTab, setActiveTab] = useState('search');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCaseForAnalysis, setSelectedCaseForAnalysis] = useState(null);
+  const [focusPrecedentCaseId, setFocusPrecedentCaseId] = useState(null);
+  const [selectedActId, setSelectedActId] = useState(null);
+  const [selectedMappingId, setSelectedMappingId] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleGlobalSearchTrigger = (query) => {
+    setSearchQuery(query);
+    setActiveTab('search');
+  };
+
+  const handleAnalyzeCase = (caseObj) => {
+    setSelectedCaseForAnalysis(caseObj);
+    setActiveTab('ai-analysis');
+  };
+
+  const handleOpenPrecedentMap = (caseId) => {
+    setFocusPrecedentCaseId(caseId);
+    setActiveTab('precedents-map');
+  };
+
+  const handleNavigateToSection = (sectionId) => {
+    setSelectedActId('act-bns');
+    setActiveTab('acts');
+  };
+
+  const handleNavigateToCase = (caseId) => {
+    setActiveTab('cases');
+  };
+
+  const handleNavigateToMapping = (mappingId) => {
+    setSelectedMappingId(mappingId);
+    setActiveTab('law-mapping');
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
+      {/* Top Navigation */}
+      <Navbar
+        onSearchTrigger={handleGlobalSearchTrigger}
+        onTabChange={setActiveTab}
+        onOpenAuth={() => setShowAuthModal(true)}
+      />
 
-      <div className="ticks"></div>
+      {/* Main Workspace Layout */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        {/* Left Sidebar */}
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Dynamic Center View Container */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+          {activeTab === 'search' && (
+            <SearchLegalView
+              initialQuery={searchQuery}
+              onNavigateToCase={handleNavigateToCase}
+              onNavigateToSection={handleNavigateToSection}
+              onNavigateToMapping={handleNavigateToMapping}
+              onAnalyzeCase={handleAnalyzeCase}
+            />
+          )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {activeTab === 'acts' && (
+            <ActsLibraryView
+              selectedActId={selectedActId}
+              onSelectSection={handleNavigateToSection}
+            />
+          )}
+
+          {activeTab === 'cases' && (
+            <CasesPrecedentsView
+              onAnalyzeCase={handleAnalyzeCase}
+              onOpenPrecedentMap={handleOpenPrecedentMap}
+            />
+          )}
+
+          {activeTab === 'ai-analysis' && (
+            <AICaseAnalysisView targetCase={selectedCaseForAnalysis} />
+          )}
+
+          {activeTab === 'precedents-map' && (
+            <PrecedentMapView focusCaseId={focusPrecedentCaseId} onSelectCase={handleAnalyzeCase} />
+          )}
+
+          {activeTab === 'law-mapping' && (
+            <LawMappingView selectedMappingId={selectedMappingId} />
+          )}
+
+          {activeTab === 'community' && (
+            <CommunityView />
+          )}
+
+          {activeTab === 'bookmarks' && (
+            <BookmarksHistoryView
+              onSearchQuery={handleGlobalSearchTrigger}
+              onNavigateToSection={handleNavigateToSection}
+              onNavigateToCase={handleNavigateToCase}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* Modals & Global Notifications */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <ToastContainer />
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

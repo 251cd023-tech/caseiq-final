@@ -1,9 +1,9 @@
 // CaseIQ Backend Complete Verification Test Suite
+process.env.NODE_ENV = 'test';
 const http = require('http');
 const app = require('./server');
 
 const PORT = 5555;
-process.env.NODE_ENV = 'test';
 
 let server;
 
@@ -208,10 +208,13 @@ async function runTests() {
     assert(postsRes.status === 200 && Array.isArray(postsRes.body.posts), 'GET /api/community/posts returns discussions');
 
     console.log(`\n--- Test Suite Summary: ${passed} Passed, ${failed} Failed ---`);
+    server.close(() => {
+      process.exit(failed > 0 ? 1 : 0);
+    });
   } catch (err) {
     console.error('Test suite error:', err);
-  } finally {
-    server.close();
+    if (server) server.close();
+    process.exit(1);
   }
 }
 

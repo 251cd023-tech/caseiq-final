@@ -7,12 +7,27 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// CORS configuration supporting Vite dev server (5173) and local development
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://localhost:5000'
+];
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin)
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive in dev mode
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,6 +39,10 @@ app.use((req, res, next) => {
 
 // Import Route Handlers
 const authRoutes = require('./routes/authRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const savedCasesRoutes = require('./routes/savedCasesRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const lawComparisonRoutes = require('./routes/lawComparisonRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const actsRoutes = require('./routes/actsRoutes');
 const sectionsRoutes = require('./routes/sectionsRoutes');
@@ -34,6 +53,10 @@ const communityRoutes = require('./routes/communityRoutes');
 
 // Mount API Endpoints
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/saved-cases', savedCasesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/law-comparison', lawComparisonRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/acts', actsRoutes);
 app.use('/api/sections', sectionsRoutes);
@@ -52,8 +75,20 @@ app.get('/api/health', (req, res) => {
     endpoints: [
       'POST /api/auth/register',
       'POST /api/auth/login',
+      'POST /api/auth/logout',
       'GET /api/auth/me',
+      'POST /api/auth/forgot-password',
+      'GET /api/profile',
+      'PUT /api/profile',
+      'POST /api/saved-cases',
+      'DELETE /api/saved-cases/:caseId',
+      'GET /api/saved-cases',
+      'GET /api/dashboard/stats',
+      'GET /api/dashboard/recent-searches',
+      'GET /api/dashboard/research-history',
+      'POST /api/law-comparison',
       'POST /api/search/legal',
+      'GET /api/search',
       'GET /api/search/history',
       'GET /api/acts',
       'GET /api/acts/:id',
@@ -61,6 +96,7 @@ app.get('/api/health', (req, res) => {
       'GET /api/sections/:id',
       'GET /api/cases',
       'GET /api/cases/:id',
+      'GET /api/cases/:id/precedents',
       'GET /api/cases/:id/relationships',
       'POST /api/ai/case-analysis',
       'GET /api/law-mappings',
@@ -74,13 +110,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Fallback error handler
+// Clean JSON error handler (no raw stack traces in responses)
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({
+  res.status(err.status || 500).json({
     success: false,
-    message: 'Internal server error',
-    error: err.message
+    error: err.message || 'Internal server error',
+    message: err.message || 'Internal server error'
   });
 });
 
@@ -88,6 +124,7 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({
     success: false,
+    error: `Endpoint not found: ${req.method} ${req.url}`,
     message: `Endpoint not found: ${req.method} ${req.url}`
   });
 });

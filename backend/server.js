@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { initDatabase } = require('./config/db');
 
 dotenv.config();
 
@@ -70,6 +71,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     platform: 'CaseIQ Legal AI Platform',
+    database: 'PostgreSQL (caseiq)',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
     endpoints: [
@@ -129,14 +131,17 @@ app.use((req, res) => {
   });
 });
 
-// Start listening
+// Start listening & initialize PostgreSQL database
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`===================================================`);
     console.log(`⚖️  CaseIQ Legal Research API Server is running!`);
     console.log(`🚀 Listening on: http://localhost:${PORT}`);
     console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
     console.log(`===================================================`);
+
+    // Automatically check / create database and tables
+    await initDatabase();
   });
 }
 

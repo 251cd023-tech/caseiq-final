@@ -18,11 +18,12 @@ exports.getMappings = (req, res) => {
   if (search) {
     const s = search.toLowerCase();
     results = results.filter(m =>
-      m.oldSection.toLowerCase().includes(s) ||
-      m.newSection.toLowerCase().includes(s) ||
-      m.oldTitle.toLowerCase().includes(s) ||
-      m.newTitle.toLowerCase().includes(s) ||
-      m.changesSummary.toLowerCase().includes(s) ||
+      (m.oldSection && m.oldSection.toLowerCase().includes(s)) ||
+      (m.newSection && m.newSection.toLowerCase().includes(s)) ||
+      (m.oldTitle && m.oldTitle.toLowerCase().includes(s)) ||
+      (m.newTitle && m.newTitle.toLowerCase().includes(s)) ||
+      (m.changesSummary && m.changesSummary.toLowerCase().includes(s)) ||
+      (m.punishmentChange && m.punishmentChange.toLowerCase().includes(s)) ||
       (m.relevanceTags && m.relevanceTags.some(t => t.toLowerCase().includes(s)))
     );
   }
@@ -35,8 +36,14 @@ exports.getMappings = (req, res) => {
 };
 
 exports.getMappingById = (req, res) => {
-  const { mappingId } = req.params;
-  const mapping = lawMappings.find(m => m.id === mappingId);
+  const { mappingId, id } = req.params;
+  const targetId = mappingId || id;
+  const mapping = lawMappings.find(m =>
+    m.id === targetId ||
+    String(m.numericId) === targetId ||
+    (m.oldSection && m.oldSection.toLowerCase() === targetId.toLowerCase())
+  );
+
   if (!mapping) {
     return res.status(404).json({ success: false, message: 'Law mapping not found' });
   }

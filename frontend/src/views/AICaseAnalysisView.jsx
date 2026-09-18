@@ -128,7 +128,7 @@ Verified Source: ${analysisResult.source || 'Supreme Court of India'}`;
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>5-Pillar Case Synthesis Engine</span>
+              <span>5-Pillar Case  Synthesis Engine</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
               AI Legal Case Analyzer

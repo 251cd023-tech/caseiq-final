@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('caseiq_token') || null);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
-  const [theme, setTheme] = useState(localStorage.getItem('caseiq_theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('caseiq_theme') || 'light');
 
   const addToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
@@ -53,18 +53,22 @@ export const AuthProvider = ({ children }) => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     localStorage.setItem('caseiq_theme', nextTheme);
-    if (nextTheme === 'light') {
-      document.documentElement.classList.add('light');
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('light');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   };
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('light');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   }, [theme]);
 
@@ -81,12 +85,8 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (err) {
           console.error('Failed to fetch user profile:', err);
-          // Set default demo user if server reachable or fallback
-          loginAsDemo(DEMO_PERSONAS[0].email);
+          logout();
         }
-      } else {
-        // Auto-login as primary lawyer persona for seamless instant demo
-        loginAsDemo(DEMO_PERSONAS[0].email);
       }
       setLoading(false);
     };

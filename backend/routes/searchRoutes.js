@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const searchController = require('../controllers/searchController');
-const { optionalAuth } = require('../middleware/auth');
+const { authenticateOptional } = require('../middleware/auth');
 
-router.post('/legal', optionalAuth, searchController.searchLegal);
-router.get('/history', optionalAuth, searchController.getSearchHistory);
+// Search endpoints
+router.post('/legal', authenticateOptional, searchController.searchLegal);
+router.get('/legal', authenticateOptional, searchController.searchGet);
+router.get('/history', authenticateOptional, searchController.getSearchHistory);
+router.get('/', authenticateOptional, searchController.searchGet);
 
 module.exports = router;
